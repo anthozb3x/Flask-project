@@ -33,3 +33,21 @@ CREATE TABLE invitations (
     FOREIGN KEY (list_id) REFERENCES lists(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Insertion de données fictives
+-- Utilisateurs
+INSERT INTO users (username, password) VALUES ('user1', 'password1');
+INSERT INTO users (username, password) VALUES ('user2', 'password2');
+
+-- Listes
+INSERT INTO lists (title, created_by) VALUES ('Liste de courses', 1);
+INSERT INTO lists (title, created_by) VALUES ('Liste de tâches', 2);
+
+-- Items
+INSERT INTO items (list_id, name, quantity, added_by) VALUES (1, 'Pommes', 5, 1);
+INSERT INTO items (list_id, name, quantity, added_by) VALUES (1, 'Bananes', 3, 2);
+INSERT INTO items (list_id, name, quantity, added_by) VALUES (2, 'Nettoyer la maison', 1, 2);
+
+-- Invitations
+INSERT INTO invitations (list_id, user_id, status) VALUES (1, 2, 'pending');
+INSERT INTO invitations (list_id, user_id, status) VALUES (2, 1, 'accepted');
