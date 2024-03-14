@@ -1,4 +1,4 @@
-from flask import Flask, render_template, g, request, redirect, url_for, flash, session
+from flask import Flask, render_template, g, request, redirect, url_for, flash, session,jsonify
 from pathlib import Path
 import sqlite3
 import hashlib
@@ -101,7 +101,10 @@ def delete_list():
     flash('Liste supprimée avec succès.')
     return redirect(url_for('home'))
 
-
+@app.route("/get_list_items/<int:list_id>")
+def get_list_items(list_id):
+    items = query("SELECT * FROM items WHERE list_id = ?", (list_id,))
+    return jsonify([dict(item) for item in items])
 """Sytem d'auth"""
 
 @app.route('/login', methods=['GET', 'POST'])

@@ -6,6 +6,7 @@
         <form id="editForm" action="{{ url_for('edit_list') }}" method="POST">
             <input type="hidden" name="list_id" id="editListId">
             <input type="text" name="title" id="editTitle" class="border rounded p-2">
+            <div id="listItemsContainer"></div>
             <button type="submit" class="bg-blue-500 text-white p-2 rounded">Modifier</button>
         </form>
         <button onclick="closeModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
@@ -29,8 +30,24 @@
     function openEditModal(listId, title) {
         document.getElementById('editListId').value = listId;
         document.getElementById('editTitle').value = title;
+
+        // Utilisez AJAX pour récupérer les éléments de la liste
+        fetch(`/get_list_items/${listId}`)
+            .then(response => response.json())
+            .then(data => {
+                const itemsContainer = document.getElementById('listItemsContainer');
+                itemsContainer.innerHTML = ''; // Nettoyer le conteneur
+                data.forEach(item => {
+                    // Créez et ajoutez des éléments HTML pour chaque item
+                    const itemElement = document.createElement('div');
+                    itemElement.innerHTML = `<input type="text" name="item_${item.id}" value="${item.name}" class="border rounded p-1">`;
+                    itemsContainer.appendChild(itemElement);
+                });
+            });
+
         document.getElementById('editModal').classList.remove('hidden');
     }
+
 
     function openDeleteModal(listId) {
         document.getElementById('deleteListId').value = listId;
