@@ -1,11 +1,11 @@
 from flask import Flask, render_template, g, request, redirect, url_for, flash, session
-import os
+from pathlib import Path
 import sqlite3
 import hashlib
 from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = 'votre_clé_secrète_ici'
+# app.secret_key = 'votre_clé_secrète_ici'
 
 DATABASE = 'database.db'
 
@@ -89,6 +89,7 @@ def register():
 
 
 if __name__ == "__main__":
-    if not os.path.exists(DATABASE):
+    bddPath = Path(DATABASE)
+    if not bddPath.exists():
         init_db()
     app.run(debug=True)
