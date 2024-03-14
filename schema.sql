@@ -36,8 +36,9 @@ CREATE TABLE invitations (
 
 -- Insertion de données fictives
 -- Utilisateurs
-INSERT INTO users (username, password) VALUES ('user1@maliste.fr', 'password1');
-INSERT INTO users (username, password) VALUES ('user2@maliste.fr', 'password2');
+INSERT INTO users (username, password) VALUES ('user1@gmail.fr', '0b14d501a594442a01c6859541bcb3e8164d183d32937b851835442f69d5c94e');
+
+
 
 -- Listes
 INSERT INTO lists (title, created_by) VALUES ('Liste de courses', 1);

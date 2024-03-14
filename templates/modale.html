@@ -1,0 +1,44 @@
+<!-- Modal de Modification -->
+<div id="editModal"
+    class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
+    <div class="bg-white p-5 rounded-lg">
+        <h2 class="text-lg">Modifier la liste</h2>
+        <form id="editForm" action="{{ url_for('edit_list') }}" method="POST">
+            <input type="hidden" name="list_id" id="editListId">
+            <input type="text" name="title" id="editTitle" class="border rounded p-2">
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Modifier</button>
+        </form>
+        <button onclick="closeModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
+    </div>
+</div>
+
+<!-- Modal de Suppression -->
+<div id="deleteModal"
+    class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
+    <div class="bg-white p-5 rounded-lg">
+        <h2 class="text-lg">Êtes-vous sûr de vouloir supprimer cette liste ?</h2>
+        <form id="deleteForm" action="{{ url_for('delete_list') }}" method="POST">
+            <input type="hidden" name="list_id" id="deleteListId">
+            <button type="submit" class="bg-red-500 text-white p-2 rounded">Supprimer</button>
+        </form>
+        <button onclick="closeModal()" class="bg-blue-500 text-white p-2 rounded">Annuler</button>
+    </div>
+</div>
+
+<script>
+    function openEditModal(listId, title) {
+        document.getElementById('editListId').value = listId;
+        document.getElementById('editTitle').value = title;
+        document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function openDeleteModal(listId) {
+        document.getElementById('deleteListId').value = listId;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').classList.add('hidden');
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+</script>

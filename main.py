@@ -5,8 +5,10 @@ import hashlib
 from functools import wraps
 
 app = Flask(__name__)
-# app.secret_key = 'votre_clé_secrète_ici'
+app.secret_key = 'sdkfjslkfjlrjaqriognioqzenfqrf:!zqjllskerfjdkjmoqrgsjerhkghqlzieMfehy'
 
+
+"""DATABASE"""
 DATABASE = 'database.db'
 
 def get_db():
@@ -29,6 +31,13 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
+def query(sql, args=(), one=False):
+    db = get_db()
+    cur = db.execute(sql, args)
+    rv = cur.fetchall()
+    db.commit() 
+    return (rv[0] if rv else None) if one else rv
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -38,53 +47,94 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
+"""page route"""
 @app.route("/")
 @login_required
-def hello_world():
-    return render_template('index.html')
+def home():
+    user_id = session.get('user_id')
+    private_lists = query('''
+        SELECT * FROM lists
+        WHERE created_by = ? AND NOT EXISTS (
+            SELECT 1 FROM invitations WHERE list_id = lists.id
+        )
+    ''', (user_id,))
+    
+    shared_lists = query('''
+        SELECT DISTINCT lists.* FROM lists
+        LEFT JOIN invitations ON lists.id = invitations.list_id
+        WHERE lists.created_by = ? OR invitations.user_id = ?
+    ''', (user_id, user_id))
+    
+    return render_template('index.html', private_lists=private_lists, shared_lists=shared_lists)
+
+
+"""CRUD LIST"""
+@app.route("/edit_list", methods=['POST'])
+@login_required
+def edit_list():
+    list_id = request.form.get('list_id')
+    new_title = request.form.get('title')
+    user_id = session.get('user_id')
+
+    # Vérifie si l'utilisateur est le créateur ou un utilisateur invité autorisé
+    list_info = query('''SELECT lists.id FROM lists
+                          LEFT JOIN invitations ON lists.id = invitations.list_id
+                          WHERE lists.id = ? AND 
+                          (lists.created_by = ? OR (invitations.user_id = ? AND invitations.status = 'accepted'))''',
+                      [list_id, user_id, user_id], one=True)
+    
+    if list_info:
+        # Si l'utilisateur a le droit de modifier la liste
+        query('UPDATE lists SET title = ? WHERE id = ?', [new_title, list_id])
+        flash('Liste modifiée avec succès.')
+    else:
+        flash('Vous n\'avez pas les droits pour modifier cette liste.')
+
+    return redirect(url_for('home'))
+
+@app.route("/delete_list", methods=['POST'])
+@login_required
+def delete_list():
+    list_id, user_id = request.form['list_id'], session.get('user_id')
+    query('DELETE FROM lists WHERE id = ? AND created_by = ?', (list_id, user_id))
+    flash('Liste supprimée avec succès.')
+    return redirect(url_for('home'))
+
+
+"""Sytem d'auth"""
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['email']
-        password = hashlib.sha256(request.form['password'].encode()).hexdigest() 
-
-        db = get_db()
-        user = db.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password)).fetchone()
-
+        username, password = request.form['email'], hashlib.sha256(request.form['password'].encode()).hexdigest()
+        user = query('SELECT * FROM users WHERE username = ? AND password = ?', (username, password), one=True)
         if user:
-            session['user_id'] = user['id']  # Stockage de l'ID utilisateur dans la session
+            session['user_id'] = user['id']
             flash('Vous êtes connecté avec succès !')
-            return redirect(url_for('hello_world'))
+            return redirect(url_for('home'))
         else:
             flash('Adresse email ou mot de passe incorrect.')
-            return redirect(url_for('login'))
-    
     return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username, password = request.form['email'], hashlib.sha256(request.form['password'].encode()).hexdigest()
+        try:
+            query('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
+            flash('Inscription réussie. Vous pouvez maintenant vous connecter.')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
+            flash('Erreur : cet utilisateur existe déjà.')
+    return render_template('register.html')
+
 
 @app.route('/logout')
 def logout():
     session.pop('user_id', None) 
     flash('Vous avez été déconnecté.')
-    return redirect(url_for('hello_world'))
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['email']
-        password = hashlib.sha256(request.form['password'].encode()).hexdigest()  # Hachage du mot de passe
-
-        db = get_db()
-        try:
-            db.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
-            db.commit()
-            flash('Inscription réussie. Vous pouvez maintenant vous connecter.')
-            return redirect(url_for('login'))
-        except sqlite3.IntegrityError:
-            flash('Erreur : cet utilisateur existe déjà.')
-            return redirect(url_for('register'))
-
-    return render_template('register.html')
+    return redirect(url_for('home'))
 
 
 
