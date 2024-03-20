@@ -49,27 +49,64 @@ def login_required(f):
 
 
 """page route"""
+
+def get_private_lists(user_id):
+    private_lists_query = '''
+    SELECT lists.id, lists.title
+    FROM lists
+   
+    WHERE lists.created_by = ? AND NOT EXISTS (
+        SELECT * FROM invitations WHERE list_id = lists.id
+    )
+    ORDER BY lists.id;
+    '''
+    return query(private_lists_query, (user_id,))
+
+def get_shared_lists(user_id):
+    shared_lists_query = '''
+    SELECT lists.id, lists.title
+    FROM lists
+    WHERE lists.created_by = ? AND EXISTS (
+        SELECT 1 FROM invitations WHERE list_id = lists.id
+    ) OR lists.id IN (
+        SELECT list_id FROM invitations WHERE user_id = ? AND status = 'accepted'
+    )
+    ORDER BY lists.id;
+    '''
+    return query(shared_lists_query, (user_id, user_id))
+
 @app.route("/")
 @login_required
 def home():
     user_id = session.get('user_id')
-    private_lists = query('''
-        SELECT * FROM lists
-        WHERE created_by = ? AND NOT EXISTS (
-            SELECT 1 FROM invitations WHERE list_id = lists.id
-        )
-    ''', (user_id,))
-    
-    shared_lists = query('''
-        SELECT DISTINCT lists.* FROM lists
-        LEFT JOIN invitations ON lists.id = invitations.list_id
-        WHERE lists.created_by = ? OR invitations.user_id = ?
-    ''', (user_id, user_id))
-    
+    private_lists = get_private_lists(user_id)
+    shared_lists = get_shared_lists(user_id)
+    print(len(shared_lists))
+    # Traitement des données pour les passer au template...
     return render_template('index.html', private_lists=private_lists, shared_lists=shared_lists)
 
 
+
 """CRUD LIST"""
+@app.route("/create_list", methods=['GET', 'POST'])
+@login_required
+def create_list():
+    if request.method == 'POST':
+        # Récupérer le titre de la liste à partir du formulaire
+        title = request.form.get('title')
+        user_id = session.get('user_id')
+
+        if title:
+            # Insérer la nouvelle liste dans la base de données
+            query('INSERT INTO lists (title, created_by) VALUES (?, ?)', (title, user_id))
+            flash('Nouvelle liste créée avec succès.')
+            return redirect(url_for('home'))
+        else:
+            flash('Le titre de la liste ne peut pas être vide.')
+
+    # Si la méthode est GET ou si le titre est vide, afficher le formulaire de création
+    return render_template('create_list.html')
+
 @app.route("/edit_list", methods=['POST'])
 @login_required
 def edit_list():
@@ -85,13 +122,40 @@ def edit_list():
                       [list_id, user_id, user_id], one=True)
     
     if list_info:
-        # Si l'utilisateur a le droit de modifier la liste
+        # Mise à jour du titre de la liste
         query('UPDATE lists SET title = ? WHERE id = ?', [new_title, list_id])
+        
+        # Mise à jour des éléments existants
+        for key, value in request.form.items():
+            if key.startswith("item_name_"):
+                item_id = key.split("_")[-1]
+                item_name = value
+                item_quantity = request.form.get(f"item_quantity_{item_id}")
+                
+                # Mettre à jour chaque élément existant
+                query('''UPDATE items SET name = ?, quantity = ? 
+                         WHERE id = ? AND list_id = ?''', 
+                      [item_name, item_quantity, item_id, list_id])
+        
+        # Ajout de nouveaux éléments
+        for key, value in request.form.items():
+            if key.startswith("new_item_name_"):
+                new_item_name = value
+                new_item_index = key.split("_")[-1]
+                new_item_quantity = request.form.get(f"new_item_quantity_{new_item_index}")
+                
+                # Insérer le nouvel élément dans la base de données
+                query('''INSERT INTO items (list_id, name, quantity, added_by) 
+                         VALUES (?, ?, ?, ?)''', 
+                      [list_id, new_item_name, new_item_quantity, user_id])
+        
         flash('Liste modifiée avec succès.')
     else:
         flash('Vous n\'avez pas les droits pour modifier cette liste.')
 
     return redirect(url_for('home'))
+
+
 
 @app.route("/delete_list", methods=['POST'])
 @login_required
@@ -105,6 +169,9 @@ def delete_list():
 def get_list_items(list_id):
     items = query("SELECT * FROM items WHERE list_id = ?", (list_id,))
     return jsonify([dict(item) for item in items])
+
+
+
 """Sytem d'auth"""
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -132,6 +199,38 @@ def register():
             flash('Erreur : cet utilisateur existe déjà.')
     return render_template('register.html')
 
+@app.route("/get_users")
+@login_required
+def get_users():
+    current_user_id = session.get('user_id')
+    users_query = "SELECT id, username FROM users WHERE id != ?"
+    users = query(users_query, [current_user_id])
+    return jsonify([{"id": user["id"], "username": user["username"]} for user in users])
+
+@app.route("/share_list", methods=['POST'])
+@login_required
+def share_list():
+    list_id = request.form.get('list_id')
+    user_to_share_with_id = request.form.get('user_to_share')
+    current_user_id = session.get('user_id')  # Assurez-vous d'avoir l'ID de l'utilisateur actuellement connecté.
+
+    # Vérification : l'utilisateur actuel est-il le propriétaire de la liste ?
+    list = query('''SELECT * FROM lists WHERE id = ? AND created_by = ?''', [list_id, current_user_id], one=True)
+    if list is None:
+        flash("Vous n'avez pas l'autorisation de partager cette liste.", 'error')
+        return redirect(url_for('home'))
+
+    # Vérifier si l'invitation existe déjà
+    invitation = query('''SELECT * FROM invitations WHERE list_id = ? AND user_id = ?''', [list_id, user_to_share_with_id], one=True)
+    if invitation:
+        flash("Cette liste a déjà été partagée avec l'utilisateur.", 'info')
+    else:
+        # Partager la liste en créant une nouvelle invitation
+        query('''INSERT INTO invitations (list_id, user_id, status) VALUES (?, ?, ?)''', [list_id, user_to_share_with_id, 'pending'])
+        flash("Liste partagée avec succès.", 'success')
+
+    return redirect(url_for('home'))
+
 
 @app.route('/logout')
 def logout():
@@ -139,6 +238,35 @@ def logout():
     flash('Vous avez été déconnecté.')
     return redirect(url_for('home'))
 
+
+"""INVITATION"""
+@app.route("/invitations")
+@login_required
+def invitations():
+    user_id = session.get('user_id')
+    invitations_query = '''
+    SELECT invitations.id, lists.title, users.username as inviter, invitations.status
+    FROM invitations
+    JOIN lists ON lists.id = invitations.list_id
+    JOIN users ON users.id = lists.created_by
+    WHERE invitations.user_id = ? AND invitations.status = 'pending'
+    '''
+    invitations = query(invitations_query, [user_id])
+    return render_template('invitations.html', invitations=invitations)
+
+@app.route("/accept_invitation/<int:invitation_id>")
+@login_required
+def accept_invitation(invitation_id):
+    query('''UPDATE invitations SET status = 'accepted' WHERE id = ?''', [invitation_id])
+    flash('Invitation acceptée.')
+    return redirect(url_for('invitations'))
+
+@app.route("/decline_invitation/<int:invitation_id>")
+@login_required
+def decline_invitation(invitation_id):
+    query('''UPDATE invitations SET status = 'declined' WHERE id = ?''', [invitation_id])
+    flash('Invitation refusée.')
+    return redirect(url_for('invitations'))
 
 
 if __name__ == "__main__":
