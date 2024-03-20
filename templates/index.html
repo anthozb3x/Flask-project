@@ -1,5 +1,50 @@
 {% extends "base.html" %}
-{% block title %}Index{% endblock %}
+{% block title %}Mes Listes{% endblock %}
 {% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Section des listes privées -->
+    <div class="mt-8">
+        <h2 class="text-xl font-semibold text-gray-700">Mes listes privées</h2>
+        {% if private_lists %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            {% for list in private_lists %}
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h3 class="font-bold text-xl">{{ list.title }}</h3>
+                <button onclick="openEditModal('{{ list.id }}', '{{ list.title }}')"
+                    class="px-4 py-2 bg-blue-500 text-white rounded">Modifier</button>
+                <button onclick="openDeleteModal('{{ list.id }}', '{{ list.title }}')"
+                    class="px-4 py-2 bg-red-500 text-white rounded">Supprimer</button>
 
+                <!-- Détails de la liste privée -->
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="mt-4 text-gray-600">Vous n'avez pas de liste privée actuellement.</p>
+        {% endif %}
+    </div>
+
+    <!-- Section des listes partagées -->
+    <div class="mt-12">
+        <h2 class="text-xl font-semibold text-gray-700">Mes listes partagées</h2>
+        {% if shared_lists %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            {% for list in shared_lists %}
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h3 class="font-bold text-xl">{{ list.title }}</h3>
+                <button onclick="openEditModal('{{ list.id }}', '{{ list.title }}')"
+                    class="px-4 py-2 bg-blue-500 text-white rounded">Modifier</button>
+                <button onclick="openDeleteModal('{{ list.id }}', '{{ list.title }}')"
+                    class="px-4 py-2 bg-red-500 text-white rounded">Supprimer</button>
+
+                <!-- Détails de la liste partagée -->
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="mt-4 text-gray-600">Vous n'avez pas de liste partagée actuellement.</p>
+        {% endif %}
+    </div>
+</div>
+{% include 'modale.html' %}
 {% endblock %}
