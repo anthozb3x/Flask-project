@@ -1,3 +1,37 @@
+<!-- Modal de Création -->
+<div id="createModal"
+    class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
+    <div class="bg-white p-5 rounded-lg">
+        <h2 class="text-lg">Créer une nouvelle liste</h2>
+        <form id="createForm" action="{{ url_for('create_list') }}" method="POST">
+            <h3>Nom de la liste :</h3>
+            <input type="text" name="title" class="border rounded p-2" required>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Créer</button>
+            <button onclick="closeCreateModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Partage -->
+<div id="shareModal"
+    class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
+    <div class="bg-white p-5 rounded-lg">
+        <h2 class="text-lg">Partager la liste</h2>
+        <form id="shareForm" action="{{ url_for('share_list') }}" method="POST">
+            <input type="hidden" name="list_id" id="shareListId">
+            <div>
+                <label for="user_to_share">Choisir un utilisateur :</label>
+                <select name="user_to_share" id="user_to_share" class="border rounded p-2">
+                    <!-- Les options seront ajoutées dynamiquement -->
+                </select>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Partager</button>
+        </form>
+        <button onclick="closeShareModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
+    </div>
+</div>
+
+
 <!-- Modal de Modification -->
 <div id="editModal"
     class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
@@ -5,11 +39,16 @@
         <h2 class="text-lg">Modifier la liste</h2>
         <form id="editForm" action="{{ url_for('edit_list') }}" method="POST">
             <input type="hidden" name="list_id" id="editListId">
+            <h3>Nom liste :</h3>
             <input type="text" name="title" id="editTitle" class="border rounded p-2">
+            <h3>contenue :</h3>
             <div id="listItemsContainer"></div>
-            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Modifier</button>
+            <button type="button" onclick="addNewItem()" class="bg-green-500 text-white p-2 rounded">Ajouter un
+                élément</button>
+
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Sauvegarder</button>
+            <button onclick="closeModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
         </form>
-        <button onclick="closeModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
     </div>
 </div>
 
@@ -27,20 +66,56 @@
 </div>
 
 <script>
+
+    function openCreateModal() {
+        document.getElementById('createModal').classList.remove('hidden');
+    }
+
+    function closeCreateModal() {
+        document.getElementById('createModal').classList.add('hidden');
+    }
+
+    function openShareModal(listId) {
+        document.getElementById('shareListId').value = listId;
+
+        fetch(`/get_users`)
+            .then(response => response.json())
+            .then(data => {
+                const userSelect = document.getElementById('user_to_share');
+                userSelect.innerHTML = ''; // Vider la liste actuelle
+                data.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.username;
+                    userSelect.appendChild(option);
+                });
+            });
+
+        document.getElementById('shareModal').classList.remove('hidden');
+    }
+
+
+    function closeShareModal() {
+        document.getElementById('shareModal').classList.add('hidden');
+    }
+
     function openEditModal(listId, title) {
         document.getElementById('editListId').value = listId;
         document.getElementById('editTitle').value = title;
 
-        // Utilisez AJAX pour récupérer les éléments de la liste
         fetch(`/get_list_items/${listId}`)
             .then(response => response.json())
             .then(data => {
                 const itemsContainer = document.getElementById('listItemsContainer');
                 itemsContainer.innerHTML = ''; // Nettoyer le conteneur
                 data.forEach(item => {
-                    // Créez et ajoutez des éléments HTML pour chaque item
+                    // Créez et ajoutez des champs HTML pour chaque item
                     const itemElement = document.createElement('div');
-                    itemElement.innerHTML = `<input type="text" name="item_${item.id}" value="${item.name}" class="border rounded p-1">`;
+                    itemElement.innerHTML = `
+                    <div class="flex mb-2">
+                        <input type="text" name="item_name_${item.id}" value="${item.name}" class="border rounded p-1 mr-2">
+                        <input type="number" name="item_quantity_${item.id}" value="${item.quantity}" class="border rounded p-1">
+                    </div>`;
                     itemsContainer.appendChild(itemElement);
                 });
             });
@@ -48,6 +123,18 @@
         document.getElementById('editModal').classList.remove('hidden');
     }
 
+    function addNewItem() {
+        const itemsContainer = document.getElementById('listItemsContainer');
+        const newItemIndex = Date.now();
+
+        const newItemElement = document.createElement('div');
+        newItemElement.innerHTML = `
+        <div class="flex mb-2">
+            <input type="text" name="new_item_name_${newItemIndex}" placeholder="Nom de l'article" class="border rounded p-1 mr-2">
+            <input type="number" name="new_item_quantity_${newItemIndex}" placeholder="Quantité" class="border rounded p-1">
+        </div>`;
+        itemsContainer.appendChild(newItemElement);
+    }
 
     function openDeleteModal(listId) {
         document.getElementById('deleteListId').value = listId;
