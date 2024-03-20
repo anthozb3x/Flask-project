@@ -3,19 +3,29 @@
 {% block content %}
 <div class="container mx-auto px-4 py-6">
     <!-- Section des listes privées -->
+    <div class="flex justify-end mb-4">
+        <button onclick="openCreateModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Créer une nouvelle liste</button>
+    </div>
+    
+    <!-- Section des listes privées -->
     <div class="mt-8">
         <h2 class="text-xl font-semibold text-gray-700">Mes listes privées</h2>
         {% if private_lists %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {% for list in private_lists %}
             <div class="bg-white shadow-md rounded-lg p-4">
-                <h3 class="font-bold text-xl">{{ list.title }}</h3>
-                <button onclick="openEditModal('{{ list.id }}', '{{ list.title }}')"
-                    class="px-4 py-2 bg-blue-500 text-white rounded">Modifier</button>
-                <button onclick="openDeleteModal('{{ list.id }}', '{{ list.title }}')"
-                    class="px-4 py-2 bg-red-500 text-white rounded">Supprimer</button>
+                <h3 class="font-bold text-xl">{{ list['title'] }}</h3>
+                <ul>
+                    {% for item in list['items'] %}
+                    <li>{{ item['name'] }}: {{ item['quantity'] }}</li>
+                    {% endfor %}
+                </ul>
+                <button onclick="openShareModal('{{ list['id'] }}')" class="px-4 py-2 bg-yellow-500 text-white rounded">Partager</button>
 
-                <!-- Détails de la liste privée -->
+                <button onclick="openEditModal('{{ list['id'] }}', '{{ list['title'] }}')"
+                    class="px-4 py-2 bg-blue-500 text-white rounded">Modifier</button>
+                <button onclick="openDeleteModal('{{ list['id'] }}', '{{ list['title'] }}')"
+                    class="px-4 py-2 bg-red-500 text-white rounded">Supprimer</button>
             </div>
             {% endfor %}
         </div>
@@ -31,13 +41,16 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {% for list in shared_lists %}
             <div class="bg-white shadow-md rounded-lg p-4">
-                <h3 class="font-bold text-xl">{{ list.title }}</h3>
-                <button onclick="openEditModal('{{ list.id }}', '{{ list.title }}')"
+                <h3 class="font-bold text-xl">{{ list['title'] }}</h3>
+                <ul>
+                    {% for item in list['items'] %}
+                    <li>{{ item['name'] }}: {{ item['quantity'] }}</li>
+                    {% endfor %}
+                </ul>
+                <button onclick="openEditModal('{{ list['id'] }}', '{{ list['title'] }}')"
                     class="px-4 py-2 bg-blue-500 text-white rounded">Modifier</button>
-                <button onclick="openDeleteModal('{{ list.id }}', '{{ list.title }}')"
+                <button onclick="openDeleteModal('{{ list['id'] }}', '{{ list['title'] }}')"
                     class="px-4 py-2 bg-red-500 text-white rounded">Supprimer</button>
-
-                <!-- Détails de la liste partagée -->
             </div>
             {% endfor %}
         </div>
