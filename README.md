@@ -11,4 +11,13 @@
 - **Listes privées et partagées** 📊: Gérez vos propres listes et voyez celles qui vous ont été partagées.
 - **Invitations** ✉️: Acceptez ou refusez les invitations à collaborer sur des listes.
 
+
+## Pour l'utiliser :
+
+Utiliser ces deux comptes :
+- user1@gmail.fr : password1
+- user2@gmail.fr : password2
+
+ou alors crée votre comptes :)
+
 © 2024 anthozbex. Tous droits réservés.
