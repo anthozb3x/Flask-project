@@ -5,16 +5,6 @@
 {% block content %}
 <div class="min-h-screen flex items-center justify-center bg-gray-100">
     <div class="max-w-md w-full space-y-8">
-        <!-- Bloc pour afficher les messages flash -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert {{ category }} px-4 py-3 rounded relative" role="alert">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
 
         <div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">

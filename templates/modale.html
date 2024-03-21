@@ -1,4 +1,4 @@
-<!-- Modal de Création -->
+<!-- create list modal -->
 <div id="createModal"
     class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
     <div class="bg-white p-5 rounded-lg">
@@ -7,12 +7,12 @@
             <h3>Nom de la liste :</h3>
             <input type="text" name="title" class="border rounded p-2" required>
             <button type="submit" class="bg-blue-500 text-white p-2 rounded">Créer</button>
-            <button onclick="closeCreateModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
+            <button onclick="toggleModal('createModal')" class="bg-red-500 text-white p-2 rounded">Annuler</button>
         </form>
     </div>
 </div>
 
-<!-- Modal de Partage -->
+<!-- shared list modal -->
 <div id="shareModal"
     class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
     <div class="bg-white p-5 rounded-lg">
@@ -27,12 +27,12 @@
             </div>
             <button type="submit" class="bg-blue-500 text-white p-2 rounded">Partager</button>
         </form>
-        <button onclick="closeShareModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
+        <button onclick="toggleModal('shareModal')" class="bg-red-500 text-white p-2 rounded">Annuler</button>
     </div>
 </div>
 
 
-<!-- Modal de Modification -->
+<!-- Edit list modal -->
 <div id="editModal"
     class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
     <div class="bg-white p-5 rounded-lg">
@@ -47,12 +47,12 @@
                 élément</button>
 
             <button type="submit" class="bg-blue-500 text-white p-2 rounded">Sauvegarder</button>
-            <button onclick="closeModal()" class="bg-red-500 text-white p-2 rounded">Annuler</button>
+            <button onclick="toggleModal('editModal')" class="bg-red-500 text-white p-2 rounded">Annuler</button>
         </form>
     </div>
 </div>
 
-<!-- Modal de Suppression -->
+<!-- Deleted Liste modal -->
 <div id="deleteModal"
     class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
     <div class="bg-white p-5 rounded-lg">
@@ -61,20 +61,17 @@
             <input type="hidden" name="list_id" id="deleteListId">
             <button type="submit" class="bg-red-500 text-white p-2 rounded">Supprimer</button>
         </form>
-        <button onclick="closeModal()" class="bg-blue-500 text-white p-2 rounded">Annuler</button>
+        <button onclick="toggleModal('deleteModal')" class="bg-blue-500 text-white p-2 rounded">Annuler</button>
     </div>
 </div>
 
 <script>
-
-    function openCreateModal() {
-        document.getElementById('createModal').classList.remove('hidden');
+    // function for close modal
+    function toggleModal(modalId) {
+        document.getElementById(modalId).classList.toggle('hidden');
     }
 
-    function closeCreateModal() {
-        document.getElementById('createModal').classList.add('hidden');
-    }
-
+    // function for open shared list modal
     function openShareModal(listId) {
         document.getElementById('shareListId').value = listId;
 
@@ -93,12 +90,7 @@
 
         document.getElementById('shareModal').classList.remove('hidden');
     }
-
-
-    function closeShareModal() {
-        document.getElementById('shareModal').classList.add('hidden');
-    }
-
+    // function for open edit list modal
     function openEditModal(listId, title) {
         document.getElementById('editListId').value = listId;
         document.getElementById('editTitle').value = title;
@@ -122,7 +114,7 @@
 
         document.getElementById('editModal').classList.remove('hidden');
     }
-
+    // function for add a new items in the list
     function addNewItem() {
         const itemsContainer = document.getElementById('listItemsContainer');
         const newItemIndex = Date.now();
@@ -135,14 +127,9 @@
         </div>`;
         itemsContainer.appendChild(newItemElement);
     }
-
+    // function for open delete list modal
     function openDeleteModal(listId) {
         document.getElementById('deleteListId').value = listId;
         document.getElementById('deleteModal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-        document.getElementById('editModal').classList.add('hidden');
-        document.getElementById('deleteModal').classList.add('hidden');
     }
 </script>

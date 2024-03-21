@@ -3,7 +3,6 @@
 
 <head>
     {% block head %}
-    <!-- Seule ligne nécessaire pour Tailwind CSS -->
     <title>{% block title %}{% endblock %}</title>
     {% endblock %}
 </head>
@@ -34,9 +33,19 @@
         </div>
     </nav>
     {% endblock %}
-
+         <!-- Bloc pour afficher les messages flash -->
+         {% with messages = get_flashed_messages(with_categories=true) %}
+         {% if messages %}
+         {% for category, message in messages %}
+         <div class="alert {{ category }} px-4 py-3 rounded relative" role="alert">
+             {{ message }}
+         </div>
+         {% endfor %}
+         {% endif %}
+         {% endwith %}
     {% block content %}
-    <!-- Le contenu principal de votre page -->
+    
+
     {% endblock %}
 
     {% block footer %}

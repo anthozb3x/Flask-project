@@ -1,13 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Mes Listes{% endblock %}
+{% block title %}Mes listes | La Liste{% endblock %}
 {% block content %}
 <div class="container mx-auto px-4 py-6">
-    <!-- Section des listes privées -->
+    <!-- create new list button -->
     <div class="flex justify-end mb-4">
-        <button onclick="openCreateModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Créer une nouvelle liste</button>
+        <button onclick="toggleModal('createModal')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Créer
+            une nouvelle liste</button>
     </div>
-    
+
     <!-- Section des listes privées -->
+
     <div class="mt-8">
         <h2 class="text-xl font-semibold text-gray-700">Mes listes privées</h2>
         {% if private_lists %}
@@ -20,7 +22,8 @@
                     <li>{{ item['name'] }}: {{ item['quantity'] }}</li>
                     {% endfor %}
                 </ul>
-                <button onclick="openShareModal('{{ list['id'] }}')" class="px-4 py-2 bg-yellow-500 text-white rounded">Partager</button>
+                <button onclick="openShareModal('{{ list['id'] }}')"
+                    class="px-4 py-2 bg-yellow-500 text-white rounded">Partager</button>
 
                 <button onclick="openEditModal('{{ list['id'] }}', '{{ list['title'] }}')"
                     class="px-4 py-2 bg-blue-500 text-white rounded">Modifier</button>
@@ -34,7 +37,7 @@
         {% endif %}
     </div>
 
-    <!-- Section des listes partagées -->
+    <!-- Shared lists section -->
     <div class="mt-12">
         <h2 class="text-xl font-semibold text-gray-700">Mes listes partagées</h2>
         {% if shared_lists %}
