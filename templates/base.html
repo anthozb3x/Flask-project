@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    {% block head %}
+    <title>{% block title %}{% endblock %}</title>
+    {% endblock %}
+</head>
+
+<body class="bg-gray-100">
+    {% block header %}
+    <nav class="bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex-shrink-0">
+                        <img class="h-8 w-8" src="{{ url_for('static', filename='images/logo-ma-liste.png') }}" alt="Logo ma Liste">
+                    </a>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            {% if session['user_id'] %}
+                            <a href="/" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900">mes listes</a>
+                            <a href="/invitations" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900">mes invitations</a>
+                            <a href="/logout" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Déconnexion</a>
+                            {% else %}
+                            <a href="/login" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Connexion</a>
+                            <a href="/register" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Inscription</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endblock %}
+         <!-- Bloc pour afficher les messages flash -->
+         {% with messages = get_flashed_messages(with_categories=true) %}
+         {% if messages %}
+         {% for category, message in messages %}
+         <div class="alert {{ category }} px-4 py-3 rounded relative" role="alert">
+             {{ message }}
+         </div>
+         {% endfor %}
+         {% endif %}
+         {% endwith %}
+    {% block content %}
+    
+
+    {% endblock %}
+
+    {% block footer %}
+    <footer class="bg-gray-800 mt-4">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-sm text-center text-gray-400">
+            © 2024 Anthony BÉAL. Tous droits réservés.
+        </div>
+    </footer>
+    {% endblock %}
+    <script src="https://cdn.tailwindcss.com"></script>
+</body>
+
+</html>
