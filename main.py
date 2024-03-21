@@ -64,7 +64,7 @@ def login_required(f):
     return decorated_function
 
 
-"""page route"""
+"""Route Page"""
 
 
 def get_private_lists(user_id):
@@ -101,25 +101,24 @@ def home():
     private_lists = get_private_lists(user_id)
     shared_lists = get_shared_lists(user_id)
     print(len(shared_lists))
-    # Traitement des données pour les passer au template...
     return render_template(
         "index.html", private_lists=private_lists, shared_lists=shared_lists
     )
 
 
-"""CRUD LIST"""
+"""LIST CRUD"""
 
 
 @app.route("/create_list", methods=["GET", "POST"])
 @login_required
 def create_list():
     if request.method == "POST":
-        # Récupérer le titre de la liste à partir du formulaire
+
         title = request.form.get("title")
         user_id = session.get("user_id")
 
         if title:
-            # Insérer la nouvelle liste dans la base de données
+
             query(
                 "INSERT INTO lists (title, created_by) VALUES (?, ?)", (title, user_id)
             )
@@ -128,7 +127,6 @@ def create_list():
         else:
             flash("Le titre de la liste ne peut pas être vide.")
 
-    # Si la méthode est GET ou si le titre est vide, afficher le formulaire de création
     return render_template("create_list.html")
 
 
@@ -160,7 +158,6 @@ def edit_list():
                 item_name = value
                 item_quantity = request.form.get(f"item_quantity_{item_id}")
 
-                # Mettre à jour chaque élément existant
                 query(
                     """UPDATE items SET name = ?, quantity = ? 
                          WHERE id = ? AND list_id = ?""",
@@ -176,7 +173,6 @@ def edit_list():
                     f"new_item_quantity_{new_item_index}"
                 )
 
-                # Insérer le nouvel élément dans la base de données
                 query(
                     """INSERT INTO items (list_id, name, quantity, added_by) 
                          VALUES (?, ?, ?, ?)""",
@@ -194,7 +190,12 @@ def edit_list():
 @login_required
 def delete_list():
     list_id, user_id = request.form["list_id"], session.get("user_id")
+    query("DELETE FROM items WHERE list_id = ?", (list_id,))
+
     query("DELETE FROM lists WHERE id = ? AND created_by = ?", (list_id, user_id))
+
+    query("DELETE FROM invitations WHERE list_id = ?", (list_id,))
+
     flash("Liste supprimée avec succès.")
     return redirect(url_for("home"))
 
@@ -205,7 +206,7 @@ def get_list_items(list_id):
     return jsonify([dict(item) for item in items])
 
 
-"""Sytem d'auth"""
+"""Auth Sytem"""
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -262,11 +263,8 @@ def get_users():
 def share_list():
     list_id = request.form.get("list_id")
     user_to_share_with_id = request.form.get("user_to_share")
-    current_user_id = session.get(
-        "user_id"
-    )  # Assurez-vous d'avoir l'ID de l'utilisateur actuellement connecté.
+    current_user_id = session.get("user_id")
 
-    # Vérification : l'utilisateur actuel est-il le propriétaire de la liste ?
     list = query(
         """SELECT * FROM lists WHERE id = ? AND created_by = ?""",
         [list_id, current_user_id],
@@ -276,7 +274,6 @@ def share_list():
         flash("Vous n'avez pas l'autorisation de partager cette liste.", "error")
         return redirect(url_for("home"))
 
-    # Vérifier si l'invitation existe déjà
     invitation = query(
         """SELECT * FROM invitations WHERE list_id = ? AND user_id = ?""",
         [list_id, user_to_share_with_id],
@@ -285,7 +282,7 @@ def share_list():
     if invitation:
         flash("Cette liste a déjà été partagée avec l'utilisateur.", "info")
     else:
-        # Partager la liste en créant une nouvelle invitation
+
         query(
             """INSERT INTO invitations (list_id, user_id, status) VALUES (?, ?, ?)""",
             [list_id, user_to_share_with_id, "pending"],
