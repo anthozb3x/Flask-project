@@ -34,21 +34,21 @@ CREATE TABLE invitations (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Insertion de données fictives
--- Utilisateurs
+-- Insert users with hashed passwords
 INSERT INTO users (username, password) VALUES ('user1@gmail.fr', '0b14d501a594442a01c6859541bcb3e8164d183d32937b851835442f69d5c94e');
+INSERT INTO users (username, password) VALUES ('user2@gmail.fr', '6cf615d5bcaac778352a8f1f3360d23f02f34ec182e259897fd6ce485d7870d4');
 
+-- Insert lists created by both users
+INSERT INTO lists (title, created_by) VALUES ('Liste de course', 1);
+INSERT INTO lists (title, created_by) VALUES ('Liste choses a prendre pour vacances', 2);
 
+-- Insert items into the lists
+INSERT INTO items (list_id, name, quantity, added_by) VALUES (1, 'pomme', 5, 1);
+INSERT INTO items (list_id, name, quantity, added_by) VALUES (1, 'bombom', 3, 1);
+INSERT INTO items (list_id, name, quantity, added_by) VALUES (1, 'livre sur python', 1, 1);
+INSERT INTO items (list_id, name, quantity, added_by) VALUES (2, 'pull', 2, 2);
+INSERT INTO items (list_id, name, quantity, added_by) VALUES (2, 't-shirt', 3, 2);
 
--- Listes
--- INSERT INTO lists (title, created_by) VALUES ('Liste de courses', 1);
--- INSERT INTO lists (title, created_by) VALUES ('Liste de tâches', 2);
-
--- Items
--- INSERT INTO items (list_id, name, quantity, added_by) VALUES (1, 'Pommes', 5, 1);
--- INSERT INTO items (list_id, name, quantity, added_by) VALUES (1, 'Bananes', 3, 2);
--- INSERT INTO items (list_id, name, quantity, added_by) VALUES (2, 'Nettoyer la maison', 1, 2);
-
--- Invitations
--- INSERT INTO invitations (list_id, user_id, status) VALUES (1, 2, 'pending');
--- INSERT INTO invitations (list_id, user_id, status) VALUES (2, 1, 'accepted');
+-- Insert invitations between the users
+INSERT INTO invitations (list_id, user_id, status) VALUES (1, 2, 'pending');
+INSERT INTO invitations (list_id, user_id, status) VALUES (2, 1, 'accepted');
