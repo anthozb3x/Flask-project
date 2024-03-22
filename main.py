@@ -337,8 +337,7 @@ def decline_invitation(invitation_id):
     return redirect(url_for("invitations"))
 
 
-if __name__ == "__main__":
-    bddPath = Path(DATABASE)
-    if not bddPath.exists():
-        init_db()
-    app.run(debug=True)
+bddPath = Path(DATABASE)
+if not bddPath.exists():
+    init_db()
+    
