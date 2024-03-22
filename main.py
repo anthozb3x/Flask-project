@@ -337,7 +337,6 @@ def decline_invitation(invitation_id):
     return redirect(url_for("invitations"))
 
 
-bddPath = Path(DATABASE)
-if not bddPath.exists():
-    init_db()
+
+init_db()
     
