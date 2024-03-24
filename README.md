@@ -2,7 +2,7 @@
 
 ![Logo de Ma Liste](/static/images/logo-ma-liste.png)
 
-**Ma Liste** est un petit outil qui permet de créer des listes et de les partager avec ses proches. Facile à utiliser, il aide à organiser vos tâches quotidiennes, courses, ou tout autre type de liste et à les partager avec ceux qui comptent pour vous.
+**Ma Liste** est un petit outil qui permet de créer des listes et de les partager avec ses proches. Facile à utiliser, il aide à organiser vos tâches quotidiennes, courses, ou tout autre type de liste.
 
 ## Fonctionnalités 🌟
 
